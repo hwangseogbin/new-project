@@ -1,0 +1,8 @@
+__pycache__/
+artifacts/
+!artifacts/
+artifacts/*
+!artifacts/fake_news_pipeline.joblib
+!artifacts/metrics.json
+.venv/
+venv/
