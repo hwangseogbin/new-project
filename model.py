@@ -150,7 +150,11 @@ class FakeNewsDetector:
     }
 
     def __init__(self, dataset_path: Path, artifact_dir: Path) -> None:
-        self.dataset_path = dataset_path.resolve()
+        from pathlib import Path
+        if dataset_path:
+            self.dataset_path = Path(dataset_path).resolve()
+        else:
+            self.dataset_path = None
         self.artifact_dir = artifact_dir
         self.model_path = artifact_dir / "fake_news_pipeline.joblib"
         self.metrics_path = artifact_dir / "metrics.json"
@@ -534,6 +538,17 @@ class FakeNewsDetector:
         return result
 
     def _load_or_train(self) -> TrainingArtifacts:
+         if self.model_path.exists():
+        payload = joblib.load(self.model_path)
+        metrics = {"model": "Loaded pre-trained model"}
+
+        self._artifacts = TrainingArtifacts(
+            headline_pipeline=payload["headline"],
+            body_pipeline=payload["body"],
+            fusion_classifier=payload["fusion"],
+            metrics=metrics,
+            )
+            return self._artifacts
         if self._artifacts is not None:
             return self._artifacts
 
