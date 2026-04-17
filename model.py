@@ -581,8 +581,7 @@ class FakeNewsDetector:
                 )
                 return self._artifacts
 
-        self._artifacts = self._train()
-        return self._artifacts
+       
 
     def _train(self) -> TrainingArtifacts:
         if not self.dataset_path.exists():
