@@ -186,7 +186,7 @@ def _build_url_fallback_result(raw_url: str, reason: str) -> dict[str, object]:
 app = Flask(__name__)
 app.secret_key = "veritasai-secret-key"
 detector = FakeNewsDetector(
-    dataset_path=_resolve_dataset_path(),
+    dataset_path=None,
     artifact_dir=BASE_DIR / "artifacts",
 )
 ADMIN_USERNAME = "hsb"
