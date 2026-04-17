@@ -537,8 +537,12 @@ class FakeNewsDetector:
         )
         return result
 
-    def _load_or_train(self) -> TrainingArtifacts:
-         if self.model_path.exists():
+   def _load_or_train(self) -> TrainingArtifacts:
+    if self._artifacts is not None:
+        return self._artifacts
+
+    # ✅ FIXED BLOCK (correct indentation)
+    if self.model_path.exists():
         payload = joblib.load(self.model_path)
         metrics = {"model": "Loaded pre-trained model"}
 
@@ -547,10 +551,8 @@ class FakeNewsDetector:
             body_pipeline=payload["body"],
             fusion_classifier=payload["fusion"],
             metrics=metrics,
-            )
-            return self._artifacts
-        if self._artifacts is not None:
-            return self._artifacts
+        )
+        return self._artifacts
 
         current_training_signature = self._training_signature()
         if self.model_path.exists() and self.metrics_path.exists():
