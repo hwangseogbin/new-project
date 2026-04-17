@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login | VerifiJin</title>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem("verifijin-theme");
+        if (savedTheme === "dark") {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch (error) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="auth-shell">
+      <section class="auth-card card">
+        <div class="auth-card-topbar">
+          <span class="mini-badge">Admin Access</span>
+          <button
+            type="button"
+            class="theme-toggle-button secondary-button"
+            id="theme-toggle"
+            aria-pressed="false"
+          >
+            Dark Theme
+          </button>
+        </div>
+        <p class="eyebrow">VerifiJin Admin</p>
+        <h2>Access the dashboard</h2>
+        <p class="hero-text">Track recent predictions and model performance from one place.</p>
+        {% if error %}
+        <div class="error-card">
+          <strong>Login failed.</strong>
+          <p>{{ error }}</p>
+        </div>
+        {% endif %}
+        <form method="post" class="detector-form">
+          <label>
+            <span>Username</span>
+            <input type="text" name="username" placeholder="admin" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input type="password" name="password" placeholder="admin123" required />
+          </label>
+          <button type="submit">Open Dashboard</button>
+        </form>
+      </section>
+    </div>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script>
+      if (window.VerifiJinTheme) {
+        window.VerifiJinTheme.initializeThemeToggle(document.getElementById("theme-toggle"));
+      }
+    </script>
+  </body>
+</html>
