@@ -537,22 +537,25 @@ class FakeNewsDetector:
         )
         return result
 
-   def _load_or_train(self) -> TrainingArtifacts:
-    if self._artifacts is not None:
-        return self._artifacts
+    def _load_or_train(self) -> TrainingArtifacts:
+        if self._artifacts is not None:
+            return self._artifacts
 
-    # ✅ FIXED BLOCK (correct indentation)
-    if self.model_path.exists():
-        payload = joblib.load(self.model_path)
-        metrics = {"model": "Loaded pre-trained model"}
+    # ✅ Load pre-trained model (no dataset)
+        if self.model_path.exists():
+            payload = joblib.load(self.model_path)
+            metrics = {"model": "Loaded pre-trained model"}
 
-        self._artifacts = TrainingArtifacts(
-            headline_pipeline=payload["headline"],
-            body_pipeline=payload["body"],
-            fusion_classifier=payload["fusion"],
-            metrics=metrics,
-        )
-        return self._artifacts
+            self._artifacts = TrainingArtifacts(
+                headline_pipeline=payload["headline"],
+                body_pipeline=payload["body"],
+                fusion_classifier=payload["fusion"],
+                metrics=metrics,
+            )
+            return self._artifacts
+
+        # fallback (only if model missing)
+        raise FileNotFoundError("Model file not found. Upload fake_news_pipeline.joblib")
 
         current_training_signature = self._training_signature()
         if self.model_path.exists() and self.metrics_path.exists():
