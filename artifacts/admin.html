@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | VerifiJin</title>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem("verifijin-theme");
+        if (savedTheme === "dark") {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch (error) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="brand-mark">V</span>
+          <div>
+            <p class="eyebrow">Admin Dashboard</p>
+            <h1>VerifiJin</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button
+            type="button"
+            class="theme-toggle-button secondary-button"
+            id="theme-toggle"
+            aria-pressed="false"
+          >
+            Dark Theme
+          </button>
+          <a class="admin-link" href="{{ url_for('index') }}">Home</a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <button class="secondary-button" type="submit">Logout</button>
+          </form>
+        </div>
+      </header>
+
+      <main class="admin-grid">
+        <section class="card hero-copy">
+          <p class="eyebrow">System Metrics</p>
+          <h2>Performance and saved activity.</h2>
+          <p class="hero-text" id="admin-fusion-strategy">{{ metrics.fusion_strategy or 'Hybrid scoring pipeline' }}</p>
+          <div class="panel-meta">
+            <span class="status-pill" id="admin-refresh-note">Auto-refreshing...</span>
+          </div>
+          <div class="metrics-row">
+            <article class="metric-card">
+              <span>Test Accuracy</span>
+              <strong id="admin-test-accuracy">{{ metrics.test_accuracy }}{% if metrics.test_accuracy != '--' %}%{% endif %}</strong>
+            </article>
+            <article class="metric-card">
+              <span>Training Accuracy</span>
+              <strong id="admin-train-accuracy">{{ metrics.train_accuracy }}{% if metrics.train_accuracy != '--' %}%{% endif %}</strong>
+            </article>
+            <article class="metric-card">
+              <span>Dataset Rows</span>
+              <strong id="admin-dataset-rows">{{ metrics.dataset_rows or '--' }}</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="card admin-panel">
+          <p class="eyebrow">Saved Results</p>
+          <h3>Latest prediction history</h3>
+          <p class="supporting-text">New predictions appear here automatically without reloading the page.</p>
+          <div class="table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Title</th>
+                  <th>Source</th>
+                  <th>Mode</th>
+                  <th>Label</th>
+                  <th>Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="admin-history-body">
+                {% for item in history %}
+                <tr>
+                  <td>{{ item.created_at }}</td>
+                  <td>{{ item.title or 'Untitled' }}</td>
+                  <td>{{ item.source or item.author or 'Unknown' }}</td>
+                  <td>{{ item.input_mode or 'manual' }}</td>
+                  <td>{{ item.label }}</td>
+                  <td>{{ item.confidence }}%</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="6">No predictions saved yet.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='admin.js') }}"></script>
+  </body>
+</html>
