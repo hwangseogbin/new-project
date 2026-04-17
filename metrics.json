@@ -1,0 +1,57 @@
+{
+  "train_accuracy": 99.56,
+  "test_accuracy": 96.52,
+  "stack_validation_accuracy": 96.4,
+  "headline_test_accuracy": 95.69,
+  "body_test_accuracy": 94.94,
+  "headline_train_accuracy": 99.35,
+  "body_train_accuracy": 99.11,
+  "dataset_rows": 63105,
+  "dataset_file": "WELFake_Dataset.csv",
+  "dataset_columns": {
+    "title": "title",
+    "author": "(not provided)",
+    "text": "text",
+    "label": "label"
+  },
+  "features": 80000,
+  "meta_features": 27,
+  "model": "Stacked Hybrid Linear SVC + TF-IDF",
+  "model_version": "4.1",
+  "training_signature": {
+    "dataset": {
+      "path": "C:\\Users\\ASUS\\Documents\\New project\\data\\WELFake_Dataset.csv",
+      "exists": true,
+      "size": 245086152,
+      "modified_ns": 1776307301569816300
+    },
+    "columns": {
+      "title": "",
+      "author": "",
+      "text": "",
+      "label": ""
+    },
+    "real_labels": [
+      "0",
+      "0.0",
+      "credible",
+      "genuine",
+      "legit",
+      "real",
+      "reliable",
+      "true"
+    ],
+    "fake_labels": [
+      "1",
+      "1.0",
+      "fake",
+      "false",
+      "hoax",
+      "misleading",
+      "rumor",
+      "unreliable"
+    ]
+  },
+  "secondary_model": "BERT Tiny chunked second opinion available locally",
+  "fusion_strategy": "stacked headline/body/meta ensemble with source credibility signals"
+}
