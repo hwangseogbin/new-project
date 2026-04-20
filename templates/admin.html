@@ -52,20 +52,20 @@
           <h2>Performance and saved activity.</h2>
           <p class="hero-text" id="admin-fusion-strategy">{{ metrics.fusion_strategy or 'Hybrid scoring pipeline' }}</p>
           <div class="panel-meta">
-            <span class="status-pill" id="admin-refresh-note">Auto-refreshing...</span>
+            <span class="status-pill" id="admin-refresh-note">Auto-refreshing in IST...</span>
           </div>
           <div class="metrics-row">
             <article class="metric-card">
               <span>Test Accuracy</span>
-              <strong id="admin-test-accuracy">{{ metrics.test_accuracy }}{% if metrics.test_accuracy != '--' %}%{% endif %}</strong>
+              <strong id="admin-test-accuracy">{{ metrics.test_accuracy if metrics.test_accuracy is not none else '--' }}{% if metrics.test_accuracy is number %}%{% endif %}</strong>
             </article>
             <article class="metric-card">
               <span>Training Accuracy</span>
-              <strong id="admin-train-accuracy">{{ metrics.train_accuracy }}{% if metrics.train_accuracy != '--' %}%{% endif %}</strong>
+              <strong id="admin-train-accuracy">{{ metrics.train_accuracy if metrics.train_accuracy is not none else '--' }}{% if metrics.train_accuracy is number %}%{% endif %}</strong>
             </article>
             <article class="metric-card">
               <span>Dataset Rows</span>
-              <strong id="admin-dataset-rows">{{ metrics.dataset_rows or '--' }}</strong>
+              <strong id="admin-dataset-rows">{{ metrics.dataset_rows if metrics.dataset_rows is not none else '--' }}</strong>
             </article>
           </div>
         </section>
@@ -78,7 +78,7 @@
             <table class="history-table">
               <thead>
                 <tr>
-                  <th>Time</th>
+                  <th>Time (IST)</th>
                   <th>Title</th>
                   <th>Source</th>
                   <th>Mode</th>
@@ -89,7 +89,7 @@
               <tbody id="admin-history-body">
                 {% for item in history %}
                 <tr>
-                  <td>{{ item.created_at }}</td>
+                  <td>{{ item.created_at|india_datetime or 'Unknown time' }}</td>
                   <td>{{ item.title or 'Untitled' }}</td>
                   <td>{{ item.source or item.author or 'Unknown' }}</td>
                   <td>{{ item.input_mode or 'manual' }}</td>
