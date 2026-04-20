@@ -254,15 +254,31 @@ class FakeNewsDetector:
     def safe_metrics(self) -> dict[str, Any]:
         try:
             return self.ensure_ready()
-        except FileNotFoundError:
+        except Exception:
+            saved_metrics = self._read_saved_metrics()
+            if saved_metrics:
+                current_training_signature = self._training_signature()
+                signature_match = self._training_signatures_match(
+                    saved_metrics.get("training_signature"),
+                    current_training_signature,
+                )
+                metrics = self._build_loaded_metrics(
+                    saved_metrics=saved_metrics,
+                    training_signature=current_training_signature,
+                    model_label=str(saved_metrics.get("model") or "Saved model metrics snapshot"),
+                    signature_match=signature_match,
+                )
+                metrics.setdefault("runtime_mode", "saved_snapshot")
+                return metrics
             return {
                 "train_accuracy": "--",
                 "test_accuracy": "--",
                 "dataset_rows": 0,
                 "features": 0,
                 "meta_features": 27,
-                "model": "Dataset missing",
+                "model": "Saved metrics unavailable",
                 "secondary_model": "Unavailable",
+                "runtime_mode": "metrics_unavailable",
             }
 
     def _parse_label_aliases(

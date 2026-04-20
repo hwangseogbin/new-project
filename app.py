@@ -4,8 +4,10 @@ import importlib.util
 import os
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+from zoneinfo import ZoneInfo
 
 import requests
 from flask import Flask, redirect, render_template, request, session, url_for
@@ -36,6 +38,8 @@ SUPPORTED_DATASET_SUFFIXES = {".csv", ".tsv", ".txt", ".json", ".jsonl"}
 DEFAULT_DATASET_LOCATIONS = (
     BASE_DIR / "data" / "WELFake_Dataset.csv",
 )
+INDIA_TIMEZONE_NAME = "Asia/Kolkata"
+INDIA_TIMEZONE = ZoneInfo(INDIA_TIMEZONE_NAME)
 
 
 def _resolve_dataset_candidate(candidate: Path) -> Path:
@@ -202,6 +206,19 @@ def _build_url_fallback_result(raw_url: str, reason: str) -> dict[str, object]:
     return result
 
 
+def _format_india_datetime(value: str) -> str:
+    raw_value = str(value or "").strip()
+    if not raw_value:
+        return ""
+    try:
+        parsed = datetime.fromisoformat(raw_value.replace("Z", "+00:00"))
+    except ValueError:
+        return raw_value
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(INDIA_TIMEZONE).strftime("%d %b %Y, %I:%M %p IST")
+
+
 app = Flask(__name__)
 app.secret_key = "veritasai-secret-key"
 detector = FakeNewsDetector(
@@ -210,6 +227,11 @@ detector = FakeNewsDetector(
 )
 ADMIN_USERNAME = "hsb"
 ADMIN_PASSWORD = "hsb18"
+
+
+@app.template_filter("india_datetime")
+def india_datetime_filter(value: object) -> str:
+    return _format_india_datetime(str(value or ""))
 
 
 @app.get("/")
@@ -262,10 +284,11 @@ def health() -> tuple[dict[str, object], int]:
 
 @app.get("/api/metrics")
 def metrics() -> tuple[dict[str, object], int]:
-    try:
-        return detector.ensure_ready(), 200
-    except FileNotFoundError as exc:
-        return {"error": str(exc)}, 503
+    metrics_payload = {
+        **detector.safe_metrics(),
+        "display_timezone": INDIA_TIMEZONE_NAME,
+    }
+    return metrics_payload, 200
 
 
 @app.post("/api/predict")
