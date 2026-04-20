@@ -21,6 +21,8 @@ const inputs = {
   author: document.getElementById("author"),
   text: document.getElementById("text"),
 };
+const INDIA_LOCALE = "en-IN";
+const INDIA_TIMEZONE = "Asia/Kolkata";
 
 let activeMode = "url";
 
@@ -41,8 +43,25 @@ function safeUrl(value) {
   return typeof value === "string" && /^https?:\/\//i.test(value) ? value : "";
 }
 
+function toFiniteNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function formatMetric(value) {
-  return typeof value === "number" ? `${value}%` : "--";
+  const numericValue = toFiniteNumber(value);
+  if (numericValue !== null) {
+    return `${numericValue}%`;
+  }
+  return typeof value === "string" && value.trim() ? value : "--";
+}
+
+function formatCount(value) {
+  const numericValue = toFiniteNumber(value);
+  if (numericValue !== null) {
+    return numericValue.toLocaleString(INDIA_LOCALE);
+  }
+  return typeof value === "string" && value.trim() ? value : "--";
 }
 
 function formatDate(value) {
@@ -55,7 +74,31 @@ function formatDate(value) {
     return String(value);
   }
 
-  return parsed.toLocaleString();
+  return `${parsed.toLocaleString(INDIA_LOCALE, {
+    timeZone: INDIA_TIMEZONE,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })} IST`;
+}
+
+function buildMetricsStatus(metrics) {
+  if (metrics.runtime_mode === "saved_snapshot") {
+    return "Saved model snapshot";
+  }
+  if (metrics.runtime_mode === "heuristic_fallback") {
+    return "Heuristic fallback mode";
+  }
+  if (metrics.dataset_file) {
+    return `${metrics.dataset_file} ready`;
+  }
+  if (metrics.model) {
+    return metrics.model;
+  }
+  return "Model ready";
 }
 
 function initializeTheme() {
@@ -97,28 +140,20 @@ async function loadMetrics() {
     const metrics = await response.json();
     metricsEls.test.textContent = formatMetric(metrics.test_accuracy);
     metricsEls.train.textContent = formatMetric(metrics.train_accuracy);
-    metricsEls.size.textContent =
-      typeof metrics.dataset_rows === "number" ? metrics.dataset_rows.toLocaleString() : "--";
-    metricsEls.status.textContent = metrics.dataset_file
-      ? `${metrics.dataset_file} ready`
-      : metrics.model
-        ? `${metrics.model} ready`
-        : "Model ready";
+    metricsEls.size.textContent = formatCount(metrics.dataset_rows);
+    metricsEls.status.textContent = buildMetricsStatus(metrics);
+
+    const testAccuracy = toFiniteNumber(metrics.test_accuracy) ?? 0;
+    const trainAccuracy = toFiniteNumber(metrics.train_accuracy) ?? 0;
 
     if (chartTest) {
-      chartTest.style.width = `${metrics.test_accuracy || 0}%`;
+      chartTest.style.width = `${testAccuracy}%`;
     }
     if (chartTrain) {
-      chartTrain.style.width = `${metrics.train_accuracy || 0}%`;
+      chartTrain.style.width = `${trainAccuracy}%`;
     }
   } catch (error) {
-    metricsEls.status.textContent = "Dataset unavailable";
-    resultStage.innerHTML = `
-      <div class="error-card">
-        <strong>Model is not ready.</strong>
-        <p>Add the WELFake dataset or set <code>DATASET_PATH</code>, then restart the app.</p>
-      </div>
-    `;
+    metricsEls.status.textContent = "Unable to load model snapshot";
   }
 }
 
@@ -149,7 +184,7 @@ async function loadHistory() {
           <article class="history-entry">
             <strong>${escapeHtml(item.label || "Unknown")} - ${escapeHtml(item.confidence)}%</strong>
             <span>${escapeHtml(item.title || "Untitled entry")}</span>
-            <span>${escapeHtml(sourceLine)} - ${escapeHtml(item.created_at || "Unknown time")}</span>
+            <span>${escapeHtml(sourceLine)} - ${escapeHtml(formatDate(item.created_at || "") || "Unknown time")}</span>
           </article>
         `;
       })

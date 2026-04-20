@@ -7,6 +7,8 @@ const adminMetricEls = {
   refreshNote: document.getElementById("admin-refresh-note"),
 };
 const adminHistoryBody = document.getElementById("admin-history-body");
+const INDIA_LOCALE = "en-IN";
+const INDIA_TIMEZONE = "Asia/Kolkata";
 
 if (window.VerifiJinTheme) {
   window.VerifiJinTheme.initializeThemeToggle(adminThemeToggle);
@@ -26,11 +28,54 @@ function escapeHtml(value) {
 }
 
 function formatPercent(value) {
-  return typeof value === "number" ? `${value}%` : "--";
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) {
+    return `${parsed}%`;
+  }
+  return typeof value === "string" && value.trim() ? value : "--";
 }
 
 function formatCount(value) {
-  return typeof value === "number" ? value.toLocaleString() : "--";
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) {
+    return parsed.toLocaleString(INDIA_LOCALE);
+  }
+  return typeof value === "string" && value.trim() ? value : "--";
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "Unknown time";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return String(value);
+  }
+
+  return `${parsed.toLocaleString(INDIA_LOCALE, {
+    timeZone: INDIA_TIMEZONE,
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })} IST`;
+}
+
+function formatTime(value) {
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Unknown time";
+  }
+
+  return `${parsed.toLocaleTimeString(INDIA_LOCALE, {
+    timeZone: INDIA_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })} IST`;
 }
 
 function updateRefreshNote(label) {
@@ -78,7 +123,7 @@ function renderAdminHistoryRows(items) {
   adminHistoryBody.innerHTML = items
     .map((item) => `
       <tr>
-        <td>${escapeHtml(item.created_at || "Unknown time")}</td>
+        <td>${escapeHtml(formatDate(item.created_at || ""))}</td>
         <td>${escapeHtml(item.title || "Untitled")}</td>
         <td>${escapeHtml(item.source || item.author || "Unknown")}</td>
         <td>${escapeHtml(item.input_mode || "manual")}</td>
@@ -103,8 +148,7 @@ async function refreshAdminDashboard() {
   updateRefreshNote("Refreshing...");
   try {
     await Promise.all([loadAdminMetrics(), loadAdminHistory()]);
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    updateRefreshNote(`Auto-refresh on - ${timestamp}`);
+    updateRefreshNote(`Auto-refresh on ${formatTime(new Date())}`);
   } catch (error) {
     updateRefreshNote("Auto-refresh unavailable");
   }
