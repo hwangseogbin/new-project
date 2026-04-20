@@ -53,5 +53,6 @@
     ]
   },
   "secondary_model": "BERT Tiny chunked second opinion available locally",
-  "fusion_strategy": "stacked headline/body/meta ensemble with source credibility signals"
+  "fusion_strategy": "stacked headline/body/meta ensemble with source credibility signals",
+  "training_signature_match": true
 }
